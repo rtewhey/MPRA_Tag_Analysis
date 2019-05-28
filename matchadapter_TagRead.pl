@@ -64,6 +64,7 @@ while (<STDIN>)
 		if(abs(distance($L1_SEQ, substr($r1,$BARCODE_SIZE,length($L1_SEQ)))) <= $match_dist)  ##Adapter match
 				{
 				$dist = distance($L1_SEQ, substr($r1,$BARCODE_SIZE,length($L1_SEQ)));
+				$match1 = -99
 				#Matched internal adapter
 				}
 			else
@@ -86,7 +87,7 @@ while (<STDIN>)
 			}
 		else
 			{
-			print REJECT join("\t",$id,$match1,$barcode_seq,$L1_read_seq,$dist,$r1,"REJECT")."\n";		
+			print MATCH join("\t",$id,$match1,$barcode_seq,$L1_read_seq,$dist,$r1,"PASS")."\n";		
 			}
 		}
 	else
