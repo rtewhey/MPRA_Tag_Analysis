@@ -3,6 +3,37 @@
 use strict;
 use warnings;
 use Text::LevenshteinXS qw(distance);
+use Getopt::Std;
+
+
+my %options=();
+getopts('HA', \%options);
+
+#####
+#
+#-H = No Adapter search. Do a hard trim
+#-A = No anchor search. 
+#
+#####
+
+my $skip_adapter;
+
+if(exists($options{H}))
+	{
+	print STDERR "Skipping adapter search\n";
+	$skip_adapter = 1;
+	}
+else {$skip_adapter = 0;}
+
+my $skip_anchor;
+
+if(exists($options{R}))
+	{
+	print STDERR "Skipping anchor search\n";
+	$skip_anchor = 1;
+	}
+else {$skip_anchor = 0;}
+
  
 my $BARCODE_SIZE = $ARGV[0];
 my $L1_SEQ_FULL = $ARGV[1];
@@ -64,21 +95,20 @@ while (<STDIN>)
 		if(abs(distance($L1_SEQ, substr($r1,$BARCODE_SIZE,length($L1_SEQ)))) <= $match_dist)  ##Adapter match
 				{
 				$dist = distance($L1_SEQ, substr($r1,$BARCODE_SIZE,length($L1_SEQ)));
-				$match1 = -99
+				$match1 = 0;
 				#Matched internal adapter
 				}
 			else
 				{
 				$dist = distance($L1_SEQ, substr($r1,$BARCODE_SIZE,length($L1_SEQ)));
-				$match1 = -999
+				$match1 = -999;
+				$match1 = 0 if($skip_anchor == 1);
 				}
 		}
-		
-		
+			
 	if($match1 != -9)
 		{
 		$barcode_seq = substr($r1,0,$BARCODE_SIZE);
-
 		$L1_read_seq = substr($r1,$BARCODE_SIZE,length($L1_SEQ));
 
 		if($match1 == 0 && $barcode_seq !~ /N/)
@@ -87,13 +117,25 @@ while (<STDIN>)
 			}
 		else
 			{
-			print MATCH join("\t",$id,$match1,$barcode_seq,$L1_read_seq,$dist,$r1,"PASS")."\n";		
+			print REJECT join("\t",$id,$match1,$barcode_seq,$L1_read_seq,$dist,$r1,"REJECT")."\n";		
 			}
+		}
+	elsif ($skip_anchor == 1)
+		{
+		$barcode_seq = substr($r1,0,$BARCODE_SIZE);
+		$L1_read_seq = substr($r1,$BARCODE_SIZE,length($L1_SEQ));
+		if($barcode_seq !~ /N/)
+			{
+			print MATCH join("\t",$id,$match1,$barcode_seq,$L1_read_seq,$dist,$r1,"PASS")."\n";
+			}
+		else
+			{
+			print REJECT join("\t",$id,$match1,$barcode_seq,$L1_read_seq,$dist,$r1,"REJECT")."\n";		
+			}	
 		}
 	else
 		{
 		$barcode_seq = substr($r1,0,$BARCODE_SIZE);
-
 		$L1_read_seq = substr($r1,$BARCODE_SIZE,length($L1_SEQ));
 		print REJECT join("\t",$id,$match1,$barcode_seq,$L1_read_seq,$dist,$r1,"REJECT")."\n";	
 		}
