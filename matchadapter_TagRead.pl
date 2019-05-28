@@ -27,7 +27,7 @@ else {$skip_adapter = 0;}
 
 my $skip_anchor;
 
-if(exists($options{R}))
+if(exists($options{A}))
 	{
 	print STDERR "Skipping anchor search\n";
 	$skip_anchor = 1;
