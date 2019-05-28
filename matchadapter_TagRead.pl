@@ -102,7 +102,7 @@ while (<STDIN>)
 				{
 				$dist = distance($L1_SEQ, substr($r1,$BARCODE_SIZE,length($L1_SEQ)));
 				$match1 = -999;
-				$match1 = 0 if($skip_anchor == 1);
+				$match1 = 0 if($skip_adapter == 1);
 				}
 		}
 			
