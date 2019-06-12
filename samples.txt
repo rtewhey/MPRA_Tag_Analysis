@@ -1,0 +1,8 @@
+OL15_plasmid_rep1	OL15_plasmid_rep1.tag
+OL15_plasmid_rep2	OL15_plasmid_rep2.tag
+OL15_plasmid_rep3	OL15_plasmid_rep3.tag
+OL15_plasmid_rep4	OL15_plasmid_rep4.tag
+OL15_K562_rep1	OL15_K562_rep1.tag
+OL15_K562_rep2	OL15_K562_rep2.tag
+OL15_K562_rep3	OL15_K562_rep3.tag
+OL15_K562_rep4	OL15_K562_rep4.tag
