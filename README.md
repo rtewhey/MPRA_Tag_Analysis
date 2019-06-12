@@ -22,4 +22,4 @@
 
 `perl compile_bc.pl samples.txt <output_file.out>`
 
-sample.txt has the sampleID in column 1 and the .tag in column 2 (see example in the repo)
+samples.txt has the sampleID in column 1 and the .tag in column 2 (see example in the repo)
