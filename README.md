@@ -15,7 +15,7 @@
 
 *(3) Assign oligos to barcodes*
 
-`cat <matchadapter_output.match> | perl associate_tags.pl stdin <Oligo-Barcode_LookupFile.barcode.ct.parsed> tmp.out`
+`cat <matchadapter_output.match> | perl associate_tags.pl stdin <Oligo-Barcode_LookupFile.barcode.ct.parsed> tmp.out  > output_file.tag`
 
 
 *(4) Build the count matrix*
