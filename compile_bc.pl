@@ -71,7 +71,7 @@ foreach $sample_ID (@ordered_list)
 		$sample_stats_B{$sample_ID}{$flag_B}{"ct"}++;
 		$sample_stats_B{$sample_ID}{$flag_B}{"sum"}+=$bc_ct;
 				
-		if($bc_flag == 0 && $oligo ne "*")
+		if($bc_flag eq 0 && $oligo ne "*")
 			{
 			die "Barcode & Sample combination seen twice\n" if(exists $counts{$barcode}{$sample_ID});
 			$counts{$barcode}{$sample_ID}=$bc_ct;
