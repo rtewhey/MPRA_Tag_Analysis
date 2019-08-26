@@ -35,6 +35,7 @@ my $key;
 my $barcode;
 my $bc_ct;
 my $flag_B;
+my $flag;
 my $oligo;
 my $bc_flag;
 my $bc_aln;
