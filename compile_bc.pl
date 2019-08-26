@@ -2,6 +2,47 @@
 
 use strict;
 use warnings;
+use Getopt::Std;
+
+my %options=();
+getopts('ECMA:', \%options);
+
+#####
+#
+#-E = Print alignment error scores for each tag
+#-C = Print CIGAR strings for each tag
+#-M = Print MD tag for each tag
+#-A = Alignment cutoff to use for barcode assignment (default = 0.05 = 5% error)
+#
+#####
+
+my $ERR_flag;
+if(exists($options{E}))
+	{
+	print STDERR "Appending alignment scores\n";
+	$ERR_flag = 1;
+	}
+else {$ERR_flag = 0;}
+
+my $CIGAR_flag;
+if(exists($options{C}))
+	{
+	print STDERR "Appending CIGAR strings\n";
+	$CIGAR_flag = 1;
+	}
+else {$CIGAR_flag = 0;}
+
+my $MD_flag;
+if(exists($options{M}))
+	{
+	print STDERR "Appending MD Tags\n";
+	$MD_flag = 1;
+	}
+else {$MD_flag = 0;}
+
+my $aln_cutoff = $options{A} || 0.05;
+print STDERR "Using $aln_cutoff error rate for alignment cutoff\n";
+
  
 my $list = $ARGV[0]; #File with ID and filename
 my $out = $ARGV[1];
@@ -48,8 +89,9 @@ foreach $sample_ID (@ordered_list)
 	{
 	$cur_file=$file_list{$sample_ID};
 	
-	print "Reading $sample_ID\n";
-	
+	print STDERR "Reading $sample_ID\n";
+	print "Stats for $sample_ID\n";
+
 	open (COUNTS, "$cur_file") or die("ERROR: can not read file ($cur_file): $!\n");
 	while (<COUNTS>)
 		{
@@ -71,24 +113,35 @@ foreach $sample_ID (@ordered_list)
 		$sample_stats_B{$sample_ID}{$flag_B}{"ct"}++;
 		$sample_stats_B{$sample_ID}{$flag_B}{"sum"}+=$bc_ct;
 				
-		if($bc_flag eq 0 && $oligo ne "*")
+		if(($bc_flag eq 0 || $bc_flag eq 2) && $oligo ne "*")
 			{
-			die "Barcode & Sample combination seen twice\n" if(exists $counts{$barcode}{$sample_ID});
-			$counts{$barcode}{$sample_ID}=$bc_ct;
+			if($aln_cutoff >= $bc_aln)
+				{
+				die "Barcode & Sample combination seen twice\n" if(exists $counts{$barcode}{$sample_ID});
+				$counts{$barcode}{$sample_ID}=$bc_ct;
 			
-			if(exists $oligo_id{$barcode})
-				{
-				die "Barcodes seen with different oligo IDs\n" if($oligo_id{$barcode} ne $oligo);		
-				die "Barcodes seen with different flag IDs\n" if($aln{$barcode} ne $bc_aln);		
-				die "Barcodes seen with different cigar IDs\n" if($cigar{$barcode} ne $bc_cigar);		
-				die "Barcodes seen with different md tag IDs\n" if($md{$barcode} ne $bc_md);		
+				if(exists $oligo_id{$barcode})
+					{
+					die "Barcodes seen with different oligo IDs\n" if($oligo_id{$barcode} ne $oligo);		
+					die "Barcodes seen with different flag IDs\n" if($aln{$barcode} ne $bc_aln);		
+					die "Barcodes seen with different cigar IDs\n" if($cigar{$barcode} ne $bc_cigar);		
+					die "Barcodes seen with different md tag IDs\n" if($md{$barcode} ne $bc_md);		
+					}
+				else
+					{
+					$oligo_id{$barcode}=$oligo;
+					$aln{$barcode}=$bc_aln;
+					$cigar{$barcode}=$bc_cigar;
+					$md{$barcode}=$bc_md;	
+					}
 				}
-			else
+			elsif($aln_cutoff == 0.05 && $bc_flag eq 0)
 				{
-				$oligo_id{$barcode}=$oligo;
-				$aln{$barcode}=$bc_aln;
-				$cigar{$barcode}=$bc_cigar;
-				$md{$barcode}=$bc_md;	
+				die "$barcode alignment score is under pipeline cutoff of 5% but flagged??\n$cur_file\n";		
+				}
+			elsif($aln_cutoff == 0.05 && $bc_flag eq 2 && $bc_aln <= 0.05)
+				{
+				die "$barcode alignment score is under pipeline cutoff of 5% but flagged??\n$cur_file\n";		
 				}
 			}
 		}
@@ -98,24 +151,32 @@ foreach $sample_ID (@ordered_list)
 		{
     	print join("\t",$key,$sample_stats{$sample_ID}{$key}{"ct"},$sample_stats{$sample_ID}{$key}{"sum"})."\n";
 		}	
-	print "Flag B\tBC Count\tRead Sum\n";
-	foreach my $key (sort { $a cmp $b} keys %{$sample_stats_B{$sample_ID}}) 
-		{
-    	print join("\t",$key,$sample_stats_B{$sample_ID}{$key}{"ct"},$sample_stats_B{$sample_ID}{$key}{"sum"})."\n";
-		}	
+	#print "Flag B\tBC Count\tRead Sum\n";
+	#foreach my $key (sort { $a cmp $b} keys %{$sample_stats_B{$sample_ID}}) 
+	#	{
+    #	print join("\t",$key,$sample_stats_B{$sample_ID}{$key}{"ct"},$sample_stats_B{$sample_ID}{$key}{"sum"})."\n";
+	#	}	
 	close COUNTS;
 	}
-	
+
+print STDERR "Writing file\n";
+
 open (OUT, ">$out") or die("ERROR: can not create $out: $!\n");
+print OUT "Barcode\tOligo\t";
+print OUT "Error\t" if($ERR_flag == 1);
+print OUT "CIGAR\t" if($CIGAR_flag == 1);
+print OUT "MD\t" if($MD_flag == 1);
+print OUT join ("\t",@ordered_list)."\n";
 
-
-print OUT join ("\t","Barcode","Oligo","Error","CIGAR","MD",@ordered_list)."\n";
 my $cur_bc;
 my $cur_sample;
 
 foreach $cur_bc (keys %counts)
 	{
-	print OUT "$cur_bc\t$oligo_id{$cur_bc}\t$aln{$cur_bc}\t$cigar{$cur_bc}\t$md{$cur_bc}";
+	print OUT "$cur_bc\t$oligo_id{$cur_bc}";
+	print OUT "\t$aln{$cur_bc}" if($ERR_flag == 1);
+	print OUT "\t$cigar{$cur_bc}" if($CIGAR_flag == 1);
+	print OUT "\t$md{$cur_bc}" if($MD_flag == 1);
 	
 	foreach $cur_sample (@ordered_list)
 		{
