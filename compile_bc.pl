@@ -61,9 +61,9 @@ foreach $sample_ID (@ordered_list)
 		$flag_B=$inline[2];
 		$oligo=$inline[3];
 		$bc_flag=$inline[4];
-		$bc_aln=$inline[5];
-		$bc_cigar=$inline[6];
-		$bc_md=$inline[7];
+		$bc_aln=$inline[6];
+		$bc_cigar=$inline[7];
+		$bc_md=$inline[8];
 		
 		$sample_stats{$sample_ID}{$bc_flag}{"ct"}++;
 		$sample_stats{$sample_ID}{$bc_flag}{"sum"}+=$bc_ct;
@@ -109,7 +109,7 @@ foreach $sample_ID (@ordered_list)
 open (OUT, ">$out") or die("ERROR: can not create $out: $!\n");
 
 
-print OUT join ("\t","Barcode","Oligo",@ordered_list)."\n";
+print OUT join ("\t","Barcode","Oligo","Error","CIGAR","MD",@ordered_list)."\n";
 my $cur_bc;
 my $cur_sample;
 
