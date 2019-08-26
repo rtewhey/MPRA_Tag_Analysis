@@ -94,12 +94,12 @@ foreach $sample_ID (@ordered_list)
 		}
 	
 	print "Flag\tBC Count\tRead Sum\n";
-	foreach my $key (sort { $a <=> $b} keys %{$sample_stats{$sample_ID}}) 
+	foreach my $key (sort { $a cmp $b} keys %{$sample_stats{$sample_ID}}) 
 		{
     	print join("\t",$key,$sample_stats{$sample_ID}{$key}{"ct"},$sample_stats{$sample_ID}{$key}{"sum"})."\n";
 		}	
 	print "Flag B\tBC Count\tRead Sum\n";
-	foreach my $key (sort { $a <=> $b} keys %{$sample_stats_B{$sample_ID}}) 
+	foreach my $key (sort { $a cmp $b} keys %{$sample_stats_B{$sample_ID}}) 
 		{
     	print join("\t",$key,$sample_stats_B{$sample_ID}{$key}{"ct"},$sample_stats_B{$sample_ID}{$key}{"sum"})."\n";
 		}	
