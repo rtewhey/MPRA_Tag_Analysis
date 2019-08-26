@@ -23,6 +23,7 @@ open (LIST, "$list") or die("ERROR: can not read file ($list): $!\n");
 
 my %sample;
 my %sample_stats;
+my %sample_stats_B;
 my %counts;
 my %cigar;
 my %md;
@@ -35,7 +36,6 @@ my $key;
 my $barcode;
 my $bc_ct;
 my $flag_B;
-my $flag;
 my $oligo;
 my $bc_flag;
 my $bc_aln;
@@ -57,21 +57,21 @@ foreach $sample_ID (@ordered_list)
 		chomp;
 		@inline = split("\t");
 		$barcode=$inline[0];
-		$flag_B=$inline[4];
 		$bc_ct=$inline[1];
+		$flag_B=$inline[2];
 		$oligo=$inline[3];
 		$bc_flag=$inline[4];
 		$bc_aln=$inline[5];
 		$bc_cigar=$inline[6];
 		$bc_md=$inline[7];
 		
-		$sample_stats{$sample_ID}{$flag}{"ct"}++;
-		$sample_stats{$sample_ID}{$flag}{"sum"}+=$bc_ct;
+		$sample_stats{$sample_ID}{$bc_flag}{"ct"}++;
+		$sample_stats{$sample_ID}{$bc_flag}{"sum"}+=$bc_ct;
 
-		$sample_stats{$sample_ID}{$flag_B}{"ct"}++;
-		$sample_stats{$sample_ID}{$flag_B}{"sum"}+=$bc_ct;
+		$sample_stats_B{$sample_ID}{$flag_B}{"ct"}++;
+		$sample_stats_B{$sample_ID}{$flag_B}{"sum"}+=$bc_ct;
 				
-		if($flag == 0 && $oligo ne "*")
+		if($bc_flag == 0 && $oligo ne "*")
 			{
 			die "Barcode & Sample combination seen twice\n" if(exists $counts{$barcode}{$sample_ID});
 			$counts{$barcode}{$sample_ID}=$bc_ct;
@@ -79,14 +79,14 @@ foreach $sample_ID (@ordered_list)
 			if(exists $oligo_id{$barcode})
 				{
 				die "Barcodes seen with different oligo IDs\n" if($oligo_id{$barcode} ne $oligo);		
-				die "Barcodes seen with different flag IDs\n" if($aln{$barcode} ne $bc_flag);		
+				die "Barcodes seen with different flag IDs\n" if($aln{$barcode} ne $bc_aln);		
 				die "Barcodes seen with different cigar IDs\n" if($cigar{$barcode} ne $bc_cigar);		
 				die "Barcodes seen with different md tag IDs\n" if($md{$barcode} ne $bc_md);		
 				}
 			else
 				{
 				$oligo_id{$barcode}=$oligo;
-				$aln{$barcode}=$bc_flag;
+				$aln{$barcode}=$bc_aln;
 				$cigar{$barcode}=$bc_cigar;
 				$md{$barcode}=$bc_md;	
 				}
@@ -97,6 +97,11 @@ foreach $sample_ID (@ordered_list)
 	foreach my $key (sort { $a <=> $b} keys %{$sample_stats{$sample_ID}}) 
 		{
     	print join("\t",$key,$sample_stats{$sample_ID}{$key}{"ct"},$sample_stats{$sample_ID}{$key}{"sum"})."\n";
+		}	
+	print "Flag B\tBC Count\tRead Sum\n";
+	foreach my $key (sort { $a <=> $b} keys %{$sample_stats_B{$sample_ID}}) 
+		{
+    	print join("\t",$key,$sample_stats_B{$sample_ID}{$key}{"ct"},$sample_stats_B{$sample_ID}{$key}{"sum"})."\n";
 		}	
 	close COUNTS;
 	}
