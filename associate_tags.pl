@@ -96,7 +96,8 @@ my $cur_tag;
 my $cur_loc;
 my $cur_ori;
 my $cur_flag;
-
+my $cur_m_flag;
+my $cur_m_aln;
 my $cur_m_cigar;
 my $cur_m_md;
 	
