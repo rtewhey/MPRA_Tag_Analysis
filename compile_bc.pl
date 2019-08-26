@@ -24,15 +24,23 @@ open (LIST, "$list") or die("ERROR: can not read file ($list): $!\n");
 my %sample;
 my %sample_stats;
 my %counts;
+my %cigar;
+my %md;
+my %aln;
+
 my %oligo_id;
 my $sample_ID;
 my $key;
 
 my $barcode;
 my $bc_ct;
-my $flag;
+my $flag_B;
 my $oligo;
-
+my $bc_flag;
+my $bc_aln;
+my $bc_cigar;
+my $bc_md;
+		
 my $cur_file;
 
 foreach $sample_ID (@ordered_list)
@@ -48,13 +56,20 @@ foreach $sample_ID (@ordered_list)
 		chomp;
 		@inline = split("\t");
 		$barcode=$inline[0];
+		$flag_B=$inline[4];
 		$bc_ct=$inline[1];
-		$flag=$inline[2];
 		$oligo=$inline[3];
-
+		$bc_flag=$inline[4];
+		$bc_aln=$inline[5];
+		$bc_cigar=$inline[6];
+		$bc_md=$inline[7];
+		
 		$sample_stats{$sample_ID}{$flag}{"ct"}++;
 		$sample_stats{$sample_ID}{$flag}{"sum"}+=$bc_ct;
-		
+
+		$sample_stats{$sample_ID}{$flag_B}{"ct"}++;
+		$sample_stats{$sample_ID}{$flag_B}{"sum"}+=$bc_ct;
+				
 		if($flag == 0 && $oligo ne "*")
 			{
 			die "Barcode & Sample combination seen twice\n" if(exists $counts{$barcode}{$sample_ID});
@@ -62,11 +77,17 @@ foreach $sample_ID (@ordered_list)
 			
 			if(exists $oligo_id{$barcode})
 				{
-				die "Barcodes seen with different oligo IDs\n" if($oligo_id{$barcode} ne $oligo);				
+				die "Barcodes seen with different oligo IDs\n" if($oligo_id{$barcode} ne $oligo);		
+				die "Barcodes seen with different flag IDs\n" if($aln{$barcode} ne $bc_flag);		
+				die "Barcodes seen with different cigar IDs\n" if($cigar{$barcode} ne $bc_cigar);		
+				die "Barcodes seen with different md tag IDs\n" if($md{$barcode} ne $bc_md);		
 				}
 			else
 				{
-				$oligo_id{$barcode}=$oligo;				
+				$oligo_id{$barcode}=$oligo;
+				$aln{$barcode}=$bc_flag;
+				$cigar{$barcode}=$bc_cigar;
+				$md{$barcode}=$bc_md;	
 				}
 			}
 		}
@@ -88,7 +109,7 @@ my $cur_sample;
 
 foreach $cur_bc (keys %counts)
 	{
-	print OUT "$cur_bc\t$oligo_id{$cur_bc}";
+	print OUT "$cur_bc\t$oligo_id{$cur_bc}\t$aln{$cur_bc}\t$cigar{$cur_bc}\t$md{$cur_bc}";
 	
 	foreach $cur_sample (@ordered_list)
 		{

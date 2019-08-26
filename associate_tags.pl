@@ -4,6 +4,8 @@
 #
 #052314 - Updated to account for multimapping oligos
 #
+####
+#	FLAGS
 ##################
 
 use strict;
@@ -36,11 +38,16 @@ while (<STDIN>)
 		$revcomp = reverse($inline[2]);
 		$revcomp =~ tr/ACGTNacgtn/TGCANtgcan/;
 	
-		${$tags{$revcomp}}[0]++;
-		${$tags{$revcomp}}[1] = -9 ;
-		${$tags{$revcomp}}[2] = "-" ;
-		${$tags{$revcomp}}[3] = "-" ;
-		${$tags{$revcomp}}[4] = $inline[2];
+		${$tags{$revcomp}}[0]++;  #Coverage
+		${$tags{$revcomp}}[1] = -9 ; #Depreciated flag (for ori)
+		${$tags{$revcomp}}[2] = "-" ; #Oligo ID
+		${$tags{$revcomp}}[3] = "-" ;	#mapping flag
+		${$tags{$revcomp}}[4] = $inline[2]; #RC Tag
+		${$tags{$revcomp}}[5] = "NA"; #mapping score
+		${$tags{$revcomp}}[6] = "NA"; #CIGAR (future)
+		${$tags{$revcomp}}[7] = "NA"; #MD tag (future)
+
+
 		}
 	}
 }
@@ -63,6 +70,9 @@ while (<TAGS>)
 		${$tags{$revcomp}}[2] = "-" ;
 		${$tags{$revcomp}}[3] = "-" ;
 		${$tags{$revcomp}}[4] = $inline[2];
+		${$tags{$revcomp}}[5] = "NA"; #mapping score
+		${$tags{$revcomp}}[6] = "NA"; #CIGAR (future)
+		${$tags{$revcomp}}[7] = "NA"; #MD tag (future)
 		}
 	}
 close TAGS;
@@ -87,12 +97,17 @@ my $cur_loc;
 my $cur_ori;
 my $cur_flag;
 
+my $cur_m_cigar;
+my $cur_m_md;
+	
 my @tmp_id;
 my @tmp_passflg;
+my @tmp_aln;
+my @tmp_cigar;
+my @tmp_md;
 my @tmp_ori;
 my $collision_ok;
 my $p;
-my $m;
 my $i;
 
 while (<ENHANCERS>)
@@ -103,6 +118,10 @@ while (<ENHANCERS>)
 	$cur_tag = $inline[0];
 	$cur_loc = $inline[1];
 	$cur_flag = $inline[4];
+	$cur_m_flag = $inline[5];
+	$cur_m_aln = $inline[6];
+	$cur_m_cigar = $inline[7];
+	$cur_m_md = $inline[8];
 	
 	if($cur_flag > 0)
 		{
@@ -112,51 +131,54 @@ while (<ENHANCERS>)
 				{
 				$collision_ok=1;
 				@tmp_id = split(/,/,$cur_loc);
-				$m = $tmp_id[0];
-				$m =~ s/_RC//;
+				@tmp_passflg = split(/,/,$cur_m_flag);
+				@tmp_aln = split(/,/,$cur_m_aln);
+				@tmp_cigar = split(/,/,$cur_m_cigar);
+				@tmp_md = split(/,/,$cur_m_md);
+				
 				foreach $p (@tmp_id)
 					{
-					$p =~ s/_RC//;
 					$collision_ok=0 unless(exists($approved_multiHit{$tmp_id[0]}{$p}));
 					}
 				if($collision_ok == 0)
 					{				
 					${$tags{$cur_tag}}[1] = -4;
 					${$tags{$cur_tag}}[2] = $cur_loc;
-					${$tags{$cur_tag}}[3] = -9
+					${$tags{$cur_tag}}[3] = $cur_flag;
+					${$tags{$cur_tag}}[5] = $cur_m_aln;
+					${$tags{$cur_tag}}[6] = $cur_m_cigar; #CIGAR
+					${$tags{$cur_tag}}[7] = $cur_m_md; #MD tag
 					}
 				if($collision_ok == 1)
 					{
-					@tmp_ori = ();
 					for($i=0;$i<scalar(@tmp_id);$i++)
 						{
-						if($tmp_id[$i] =~ /_RC_/)
-							{
-							$tmp_id[$i] =~ s/_RC//;
-							push(@tmp_ori,1);
-							}
-						else
-							{
-							push(@tmp_ori,0);							
-							}
+						${$tags{$cur_tag}}[1] = -1;
+						${$tags{$cur_tag}}[2] = $tmp_id[$i];	
+						${$tags{$cur_tag}}[3] = $tmp_passflg[$i];
+						${$tags{$cur_tag}}[5] = $tmp_aln[$i];
+						${$tags{$cur_tag}}[6] = $tmp_cigar[$i]; #CIGAR
+						${$tags{$cur_tag}}[7] = $tmp_md[$i]; #MD tag
 						}
-					${$tags{$cur_tag}}[1] = -1;
-					${$tags{$cur_tag}}[2] = join(",",@tmp_id);	
-					${$tags{$cur_tag}}[3] = join(",",@tmp_ori)
-
 					}	
 				}
 			elsif($cur_flag == 2)
 				{
 				${$tags{$cur_tag}}[1] = -5;
 				${$tags{$cur_tag}}[2] = $cur_loc;
-				${$tags{$cur_tag}}[3] = -9
+				${$tags{$cur_tag}}[3] = $cur_flag;
+				${$tags{$cur_tag}}[5] = $cur_m_aln;
+				${$tags{$cur_tag}}[6] = $cur_m_cigar; #CIGAR
+				${$tags{$cur_tag}}[7] = $cur_m_md; #MD tag
 				}
 			elsif($cur_flag > 2)
 				{
 				${$tags{$cur_tag}}[1] = -6;
 				${$tags{$cur_tag}}[2] = $cur_loc;
-				${$tags{$cur_tag}}[3] = -9
+				${$tags{$cur_tag}}[3] = $cur_flag;
+				${$tags{$cur_tag}}[5] = $cur_m_aln;
+				${$tags{$cur_tag}}[6] = $cur_m_cigar; #CIGAR
+				${$tags{$cur_tag}}[7] = $cur_m_md; #MD tag
 				}
 			}
 		}
@@ -164,15 +186,12 @@ while (<ENHANCERS>)
 		{
 		if(exists($tags{$cur_tag}))
 			{
-			$cur_ori = 0;
-			if($cur_loc =~ /_RC_/)
-				{
-				$cur_loc =~ s/_RC//;
-				$cur_ori = 1;
-				}
 			${$tags{$cur_tag}}[1] = $cur_ori;
 			${$tags{$cur_tag}}[2] = $cur_loc;
-			${$tags{$cur_tag}}[3] = $cur_ori;		
+			${$tags{$cur_tag}}[3] = $cur_flag;	
+			${$tags{$cur_tag}}[5] = $cur_m_aln;
+			${$tags{$cur_tag}}[6] = $cur_m_cigar;
+			${$tags{$cur_tag}}[7] = $cur_m_md;	
 			}
 		}
 	}	
