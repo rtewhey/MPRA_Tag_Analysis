@@ -94,7 +94,6 @@ while (<MULTIHIT>)
 
 my $cur_tag;
 my $cur_loc;
-my $cur_ori;
 my $cur_flag;
 my $cur_m_flag;
 my $cur_m_aln;
@@ -187,7 +186,7 @@ while (<ENHANCERS>)
 		{
 		if(exists($tags{$cur_tag}))
 			{
-			${$tags{$cur_tag}}[1] = $cur_ori;
+			${$tags{$cur_tag}}[1] = 0;
 			${$tags{$cur_tag}}[2] = $cur_loc;
 			${$tags{$cur_tag}}[3] = $cur_flag;	
 			${$tags{$cur_tag}}[5] = $cur_m_aln;
