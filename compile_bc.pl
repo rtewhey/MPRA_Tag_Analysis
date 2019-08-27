@@ -119,7 +119,8 @@ foreach $sample_ID (@ordered_list)
 				{
 				die "Barcode & Sample combination seen twice\n" if(exists $counts{$barcode}{$sample_ID});
 				$counts{$barcode}{$sample_ID}=$bc_ct;
-			
+				$sample_stats{$sample_ID}{"counted"}{"ct"}++;
+				$sample_stats{$sample_ID}{"counted"}{"sum"}+=$bc_ct;
 				if(exists $oligo_id{$barcode})
 					{
 					die "Barcodes seen with different oligo IDs\n$barcode\n$oligo_id{$barcode}\n$cur_file\n$oligo\n" if($oligo_id{$barcode} ne $oligo);		
@@ -129,8 +130,6 @@ foreach $sample_ID (@ordered_list)
 					}
 				else
 					{
-					$sample_stats{$sample_ID}{"counted"}{"ct"}++;
-					$sample_stats{$sample_ID}{"counted"}{"sum"}+=$bc_ct;
 					$oligo_id{$barcode}=$oligo;
 					$aln{$barcode}=$bc_aln;
 					$cigar{$barcode}=$bc_cigar;
