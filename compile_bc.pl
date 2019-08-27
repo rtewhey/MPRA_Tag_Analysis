@@ -122,10 +122,10 @@ foreach $sample_ID (@ordered_list)
 			
 				if(exists $oligo_id{$barcode})
 					{
-					die "Barcodes seen with different oligo IDs\n" if($oligo_id{$barcode} ne $oligo);		
-					die "Barcodes seen with different flag IDs\n" if($aln{$barcode} ne $bc_aln);		
-					die "Barcodes seen with different cigar IDs\n" if($cigar{$barcode} ne $bc_cigar);		
-					die "Barcodes seen with different md tag IDs\n" if($md{$barcode} ne $bc_md);		
+					die "Barcodes seen with different oligo IDs\n$barcode\n$oligo_id{$barcode}\n$cur_file\n$oligo\n" if($oligo_id{$barcode} ne $oligo);		
+					die "Barcodes seen with different flag IDs\n$barcode\n$aln{$barcode}\n$cur_file\n$bc_aln\n" if($aln{$barcode} ne $bc_aln);		
+					die "Barcodes seen with different cigar IDs\n$barcode\n$cigar{$barcode}\n$cur_file\n$bc_cigar\n" if($cigar{$barcode} ne $bc_cigar);		
+					die "Barcodes seen with different md tag IDs\n$barcode\n$md{$barcode}\n$cur_file\n$bc_md\n" if($md{$barcode} ne $bc_md);		
 					}
 				else
 					{
