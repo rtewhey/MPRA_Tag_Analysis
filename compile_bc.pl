@@ -129,6 +129,8 @@ foreach $sample_ID (@ordered_list)
 					}
 				else
 					{
+					$sample_stats{$sample_ID}{"counted"}{"ct"}++;
+					$sample_stats{$sample_ID}{"counted"}{"sum"}+=$bc_ct;
 					$oligo_id{$barcode}=$oligo;
 					$aln{$barcode}=$bc_aln;
 					$cigar{$barcode}=$bc_cigar;
