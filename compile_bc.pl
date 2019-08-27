@@ -5,15 +5,15 @@ use warnings;
 use Getopt::Std;
 
 my %options=();
-getopts('ECMA:', \%options);
+getopts('ECMSA:', \%options);
 
 #####
 #
 #-E = Print alignment error scores for each tag
 #-C = Print CIGAR strings for each tag
 #-M = Print MD tag for each tag
+#-S = Print Start/Stop for oligo alignment
 #-A = Alignment cutoff to use for barcode assignment (default = 0.05 = 5% error)
-#
 #####
 
 my $ERR_flag;
@@ -39,6 +39,15 @@ if(exists($options{M}))
 	$MD_flag = 1;
 	}
 else {$MD_flag = 0;}
+
+my $POS_flag;
+if(exists($options{S}))
+	{
+	print STDERR "Appending Alignment start/stop\n";
+	$POS_flag = 1;
+	}
+else {$POS_flag = 0;}
+
 
 my $aln_cutoff = $options{A} || 0.05;
 print STDERR "Using $aln_cutoff error rate for alignment cutoff\n";
@@ -69,6 +78,7 @@ my %counts;
 my %cigar;
 my %md;
 my %aln;
+my %pos;
 
 my %oligo_id;
 my $sample_ID;
@@ -82,7 +92,8 @@ my $bc_flag;
 my $bc_aln;
 my $bc_cigar;
 my $bc_md;
-		
+my $bc_pos;
+	
 my $cur_file;
 
 foreach $sample_ID (@ordered_list)
@@ -106,6 +117,7 @@ foreach $sample_ID (@ordered_list)
 		$bc_aln=$inline[6];
 		$bc_cigar=$inline[7];
 		$bc_md=$inline[8];
+		$bc_pos=$inline[9];
 		
 		$sample_stats{$sample_ID}{$bc_flag}{"ct"}++;
 		$sample_stats{$sample_ID}{$bc_flag}{"sum"}+=$bc_ct;
@@ -127,6 +139,8 @@ foreach $sample_ID (@ordered_list)
 					die "Barcodes seen with different flag IDs\n$barcode\n$aln{$barcode}\n$cur_file\n$bc_aln\n" if($aln{$barcode} ne $bc_aln);		
 					die "Barcodes seen with different cigar IDs\n$barcode\n$cigar{$barcode}\n$cur_file\n$bc_cigar\n" if($cigar{$barcode} ne $bc_cigar);		
 					die "Barcodes seen with different md tag IDs\n$barcode\n$md{$barcode}\n$cur_file\n$bc_md\n" if($md{$barcode} ne $bc_md);		
+					die "Barcodes seen with different start/stop positions IDs\n$barcode\n$pos{$barcode}\n$cur_file\n$bc_pos\n" if($pos{$barcode} ne $bc_pos);		
+
 					}
 				else
 					{
@@ -134,6 +148,7 @@ foreach $sample_ID (@ordered_list)
 					$aln{$barcode}=$bc_aln;
 					$cigar{$barcode}=$bc_cigar;
 					$md{$barcode}=$bc_md;	
+					$pos{$barcode}=$bc_pos;	
 					}
 				}
 			elsif($aln_cutoff == 0.05 && $bc_flag eq 0)
@@ -167,6 +182,7 @@ print OUT "Barcode\tOligo\t";
 print OUT "Error\t" if($ERR_flag == 1);
 print OUT "CIGAR\t" if($CIGAR_flag == 1);
 print OUT "MD\t" if($MD_flag == 1);
+print OUT "Aln_Start:Stop\t" if($POS_flag == 1);
 print OUT join ("\t",@ordered_list)."\n";
 
 my $cur_bc;
@@ -178,6 +194,7 @@ foreach $cur_bc (keys %counts)
 	print OUT "\t$aln{$cur_bc}" if($ERR_flag == 1);
 	print OUT "\t$cigar{$cur_bc}" if($CIGAR_flag == 1);
 	print OUT "\t$md{$cur_bc}" if($MD_flag == 1);
+	print OUT "\t$pos{$cur_bc}" if($POS_flag == 1);
 	
 	foreach $cur_sample (@ordered_list)
 		{
