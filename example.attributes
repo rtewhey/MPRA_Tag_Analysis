@@ -1,0 +1,10 @@
+ID	SNP	project	window	strand	allele	haplotype	bash
+10:101283330:C:A:A:wC	10:101283330:C:A	TGWAS	center	fwd	alt	ref	NA
+10:101283330:C:A:R:wC	10:101283330:C:A	TGWAS	center	fwd	ref	ref	NA
+10:104222963:T:C:A:wC	10:104222963:T:C	TGWAS	center	fwd	alt	ref	NA
+10:104222963:T:C:R:wC	10:104222963:T:C	TGWAS	center	fwd	ref	ref	NA
+10:104223628:T:C:A:wC	10:104223628:T:C	TGWAS	center	fwd	alt	ref	NA
+10:104223628:T:C:R:wC	10:104223628:T:C	TGWAS	center	fwd	ref	ref	NA
+10:104223831:G:A:A:wC	10:104223831:G:A	TGWAS	center	fwd	alt	ref	NA
+10:104223831:G:A:R:wC	10:104223831:G:A	TGWAS	center	fwd	ref	ref	NA
+10:104226239:CAAA:C:A:wC	10:104226239:CAAA:C	TGWAS	center	fwd	alt	ref	NA
